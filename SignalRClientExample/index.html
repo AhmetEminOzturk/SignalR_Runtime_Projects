@@ -17,6 +17,9 @@
                 connection.invoke("SendMessageAsync", message).catch(error => console.log(`Mesaj gonderilirken hata olustu. ${error}`));
             });
 
+            connection.on("receiveMessage", message =>{
+                $("div").append(message + "<br>");
+            })
         });
     </script>
 </head>
@@ -24,6 +27,7 @@
 <body>
     <input type="text" id="txtMessage">
     <button id="btnGonder">Gonder</button>
+    <div></div>
 </body>
 
 </html>
