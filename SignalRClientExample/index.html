@@ -8,9 +8,55 @@
     <script>
         $(document).ready(()=> {
             const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:5001/myhub").build();
+            .withUrl("https://localhost:5001/myhub")
+            .withAutomaticReconnect([1000,1000,2000]) // 0 , 2 , 10 , 30
+            .build();
 
-            connection.start();
+
+            async function start(){
+                try {
+                    await connection.start();
+                } catch (error) {
+                    setTimeout(()=> start(), 2000)
+                }
+            }
+
+            start();
+
+            const durum = $("#durum");
+            connection.onreconnecting(error=>{
+                durum.css("background-color" , "blue");
+                durum.css("color" , "white");
+                durum.html("Baglanti Kuruluyor...");
+                durum.fadeIn(2000 , () => {
+                    setTimeout(()=> {
+                        durum.fadeOut(2000);
+                    }, 2000)
+                });
+            });
+
+            connection.onreconnected(connectionId =>{
+                durum.css("background-color" , "green");
+                durum.css("color" , "white");
+                durum.html("Baglanti Kuruldu...");
+                durum.fadeIn(2000 , () => {
+                    setTimeout(()=> {
+                        durum.fadeOut(2000);
+                    }, 2000)
+                });
+            });
+            
+            connection.onclose(connectionId=>{
+                durum.css("background-color" , "red");
+                durum.css("color" , "white");
+                durum.html("Baglanilamadi...");
+                durum.fadeIn(2000 , () => {
+                    setTimeout(()=> {
+                        durum.fadeOut(2000);
+                    }, 2000)
+                });
+            });
+            //connection.start();
 
             $("#btnGonder").click(()=> {
                 let message = $("#txtMessage").val();
@@ -18,16 +64,19 @@
             });
 
             connection.on("receiveMessage", message =>{
-                $("div").append(message + "<br>");
+                $("#mesajlar").append(message + "<br>");
             })
         });
     </script>
 </head>
 
 <body>
+    <div id="durum" style="display: none;"></div>
+
     <input type="text" id="txtMessage">
     <button id="btnGonder">Gonder</button>
-    <div></div>
+
+    <div id="mesajlar"></div>
 </body>
 
 </html>
